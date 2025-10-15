@@ -22,15 +22,8 @@ RUN python -m pip install --upgrade pip && \
 # Copy project
 COPY . /app
 
-# Use a non-root user for security
-RUN groupadd --system appgroup && useradd --system --gid appgroup --create-home appuser || true
-
-# Create the generated_tasks directory with full write permissions
-RUN mkdir -p /app/generated_tasks && \
-    chmod 777 /app/generated_tasks && \
-    chown -R appuser:appgroup /app
-
-USER appuser
+# Create the generated_tasks directory
+RUN mkdir -p /app/generated_tasks
 
 # Expose the port Spaces will route to (use PORT env variable default 8080)
 EXPOSE 8080
