@@ -24,7 +24,9 @@ COPY . /app
 
 # Use a non-root user for security
 RUN groupadd --system appgroup && useradd --system --gid appgroup --create-home appuser || true
-RUN chown -R appuser:appgroup /app
+
+# Create the generated_tasks directory and give ownership to appuser
+RUN mkdir -p /app/generated_tasks && chown -R appuser:appgroup /app
 
 USER appuser
 
