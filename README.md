@@ -1,3 +1,13 @@
+---
+title: Gemini Task Automation
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 8080
+pinned: false
+---
+
 # GEMINI_PROJECT - FastAPI Task Automation Service
 
 Automated task receiver that uses Gemini AI to generate web apps and deploys them to GitHub Pages.
