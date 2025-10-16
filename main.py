@@ -286,6 +286,8 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
             "6. Show OCR progress percentage if available\n"
             "7. The page must AUTOMATICALLY solve the CAPTCHA without user interaction\n"
             "8. DO NOT create a manual input form - this must be AUTOMATED OCR\n"
+            "9. REQUIRED CODE: Include <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>\n"
+            "10. REQUIRED CODE: Call Tesseract.recognize(imageUrl).then(result => display result.data.text)\n"
             "\n"
             "Return output strictly as a JSON object with keys: 'index.html', 'README.md', and 'LICENSE'."
         )
