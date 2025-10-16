@@ -225,7 +225,7 @@ async def save_generated_files_locally(task_id: str, files: dict) -> str:
     Saves the generated files (index.html, README.md, LICENSE) into a local 
     directory named after the task_id within the 'generated_tasks' folder.
     """
-    base_dir = os.path.join(os.getcwd(), "generated_tasks")
+    base_dir = "/tmp/generated_tasks"
     task_dir = os.path.join(base_dir, task_id)
     
     # Ensure the task-specific directory exists
@@ -480,8 +480,8 @@ async def generate_files_and_deploy(task_data: TaskRequest):
     repo_url_http = f"https://github.com/{github_username}/{repo_name}"
     
     try:
-        # 0. Setup local directory
-        base_dir = os.path.join(os.getcwd(), "generated_tasks")
+        # 0. Setup local directory - use /tmp which is always writable
+        base_dir = "/tmp/generated_tasks"
         local_path = os.path.join(base_dir, task_id)
 
         # --- ROBUST CLEANUP LOGIC ---
