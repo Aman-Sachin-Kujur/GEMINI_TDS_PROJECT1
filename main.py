@@ -272,11 +272,21 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
         print("--- [LLM_CALL] Detected vague captcha solver prompt — auto-expanding ---")
         prompt += (
             "\n\n"
-            "Ensure the web app is a single, complete, fully responsive HTML file using Tailwind CSS. "
-            "It must fetch an image from the query parameter '?url=https://.../image.png', display it, "
-            "and perform OCR using Tesseract.js via CDN. "
-            "If the URL parameter is missing, use the attached sample image by default. "
-            "Show the recognized text and any errors clearly in the UI. "
+            "CRITICAL REQUIREMENTS:\n"
+            "1. Create a FULLY FUNCTIONAL automated CAPTCHA OCR solver using Tesseract.js\n"
+            "2. Load Tesseract.js from CDN: https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js\n"
+            "3. On page load, AUTOMATICALLY:\n"
+            "   - Read the image URL from query parameter '?url=...' OR use 'sample.png' as fallback\n"
+            "   - Display the CAPTCHA image in an <img> tag\n"
+            "   - Run Tesseract OCR on the image IMMEDIATELY\n"
+            "   - Show a loading indicator during OCR processing\n"
+            "   - Display the recognized text prominently when complete (within 15 seconds)\n"
+            "4. Handle errors gracefully (image load failures, OCR errors)\n"
+            "5. Use Tailwind CSS for responsive, professional styling\n"
+            "6. Show OCR progress percentage if available\n"
+            "7. The page must AUTOMATICALLY solve the CAPTCHA without user interaction\n"
+            "8. DO NOT create a manual input form - this must be AUTOMATED OCR\n"
+            "\n"
             "Return output strictly as a JSON object with keys: 'index.html', 'README.md', and 'LICENSE'."
         )
     # Define system instruction for the model (UNCHANGED)
