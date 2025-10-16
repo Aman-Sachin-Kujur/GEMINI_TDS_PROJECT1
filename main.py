@@ -102,7 +102,11 @@ async def commit_and_publish(repo: git.Repo, task_id: str, round_index: int, rep
 
     async with httpx.AsyncClient(timeout=45) as client:
         try:
-            # 1. ADD, COMMIT, AND PUSH FILES
+            # 1. CONFIGURE GIT USER (required for commits in Docker)
+            repo.config_writer().set_value("user", "name", "TDS AutoDeploy Bot").release()
+            repo.config_writer().set_value("user", "email", "bot@tds-project.local").release()
+            
+            # 2. ADD, COMMIT, AND PUSH FILES
             # The new files (generated and attachments) are now in the local_path.
             repo.git.add(A=True)
             commit_message = f"Task {task_id} - Round {round_index}: LLM-generated app update/creation"
