@@ -228,6 +228,7 @@ async def save_generated_files_locally(task_id: str, files: dict) -> str:
     """
     Saves the generated files (index.html, README.md, LICENSE) into a local 
     directory named after the task_id within the 'generated_tasks' folder.
+    Handles both old format {filename: content} and new format {"files": [{path, content}]}
     """
     base_dir = "/tmp/generated_tasks"
     task_dir = os.path.join(base_dir, task_id)
@@ -238,18 +239,59 @@ async def save_generated_files_locally(task_id: str, files: dict) -> str:
     
     print(f"--- [LOCAL_SAVE] Saving files to: {task_dir} ---")
     
-    # Write each file from the generated dictionary to the local file system
-    for filename, content in files.items():
-        file_path = os.path.join(task_dir, filename)
-        try:
-            # Write the content to the file. Assuming content is a string (text files).
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            print(f"   -> Saved: {filename} (Size: {len(content)} bytes)")
-        except Exception as e:
-            print(f"   -> ERROR saving {filename}: {e}")
-            # If saving fails, we treat this as a critical error for the task
-            raise Exception(f"Failed to save file {filename} locally.")
+    # Handle new array-based format: {"files": [{"path": "...", "content": "..."}]}
+    if "files" in files and isinstance(files["files"], list):
+        files_list = files["files"]
+        for file_obj in files_list:
+            filename = file_obj.get("path", "")
+            content = file_obj.get("content", "")
+            
+            if not filename:
+                print(f"   -> WARNING: Skipping file with no path")
+                continue
+            
+            # Handle case where content is a list instead of string
+            if isinstance(content, list):
+                print(f"   -> WARNING: Content for {filename} is a list, joining with newlines")
+                content = "\n".join(str(item) for item in content)
+            elif not isinstance(content, str):
+                print(f"   -> WARNING: Content for {filename} is {type(content)}, converting to string")
+                content = str(content)
+                
+            file_path = os.path.join(task_dir, filename)
+            try:
+                # Create subdirectories if needed (e.g., "css/style.css")
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                
+                # Write the content to the file
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                print(f"   -> Saved: {filename} (Size: {len(content)} bytes)")
+            except Exception as e:
+                print(f"   -> ERROR saving {filename}: {e}")
+                print(f"   -> Content type: {type(content)}, First 200 chars: {str(content)[:200]}")
+                raise Exception(f"Failed to save file {filename} locally.")
+    
+    # Handle old flat format: {filename: content} (for backwards compatibility)
+    else:
+        for filename, content in files.items():
+            # Handle case where content is a list instead of string
+            if isinstance(content, list):
+                print(f"   -> WARNING: Content for {filename} is a list, joining with newlines")
+                content = "\n".join(str(item) for item in content)
+            elif not isinstance(content, str):
+                print(f"   -> WARNING: Content for {filename} is {type(content)}, converting to string")
+                content = str(content)
+                
+            file_path = os.path.join(task_dir, filename)
+            try:
+                # Write the content to the file. Assuming content is a string (text files).
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                print(f"   -> Saved: {filename} (Size: {len(content)} bytes)")
+            except Exception as e:
+                print(f"   -> ERROR saving {filename}: {e}")
+                raise Exception(f"Failed to save file {filename} locally.")
 
     return task_dir
 
