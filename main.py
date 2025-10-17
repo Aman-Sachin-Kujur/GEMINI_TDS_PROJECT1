@@ -369,14 +369,15 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
     }
     
     # Use exponential backoff for the API call 
-    max_retries = 3
-    base_delay = 1
+    max_retries = 5  # Increased from 3 to 5
+    base_delay = 2   # Increased from 1 to 2
     
     for attempt in range(max_retries):
         try:
             # Construct the URL with the API key
             url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
-            async with httpx.AsyncClient(timeout=60) as client:
+            # Increased timeout from 60s to 180s for complex tasks
+            async with httpx.AsyncClient(timeout=180.0) as client:
                 response = await client.post(
                     url, 
                     json=payload,
