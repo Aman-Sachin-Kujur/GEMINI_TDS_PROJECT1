@@ -1,3 +1,13 @@
+---
+title: Gemini Task Automation
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 8080
+pinned: false
+---
+
 # 🤖 Gemini Task Automation System
 
 **An AI-powered task automation service that receives task descriptions, generates complete web applications using Gemini AI, and automatically deploys them to GitHub Pages.**
