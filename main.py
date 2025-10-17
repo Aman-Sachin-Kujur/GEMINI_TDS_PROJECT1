@@ -267,21 +267,40 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
     # Define system instruction for the model
     system_prompt = (
         "You are an expert full-stack engineer and technical writer. Your task is to generate "
-        "three files in a single structured JSON response: 'index.html', 'README.md', and 'LICENSE'. "
-        "The 'index.html' must be a single, complete, fully responsive HTML file using Tailwind CSS "
-        "for styling and must implement the requested application logic. The 'README.md' must be "
-        "professional. The 'LICENSE' must contain the full text of the MIT license."
+        "a complete web application with three files in a structured JSON response:\n\n"
+        "Return a JSON object with a 'files' array containing:\n"
+        "1. index.html - A single, complete, fully responsive HTML file using Tailwind CSS CDN for styling, "
+        "with all JavaScript inline. Must be production-ready and implement ALL requested features.\n"
+        "2. README.md - Professional project documentation with title, description, features, usage instructions.\n"
+        "3. LICENSE - Full text of the MIT License.\n\n"
+        "Example response structure:\n"
+        "{\n"
+        '  "files": [\n'
+        '    {"path": "index.html", "content": "<!DOCTYPE html>..."},\n'
+        '    {"path": "README.md", "content": "# Project Title\\n\\n..."},\n'
+        '    {"path": "LICENSE", "content": "MIT License\\n\\nCopyright..."}\n'
+        "  ]\n"
+        "}\n\n"
+        "Make the application beautiful, functional, and complete. Use modern design principles."
     )
     
-    # Define the JSON response structure (UNCHANGED)
+    # Define the JSON response structure with proper array-based file list
     response_schema = {
         "type": "OBJECT",
         "properties": {
-            "index.html": {"type": "STRING", "description": "The complete, single-file HTML content with inline CSS and JS, using Tailwind."},
-            "README.md": {"type": "STRING", "description": "The professional Markdown content for the project README."},
-            "LICENSE": {"type": "STRING", "description": "The full text of the MIT license."}
+            "files": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "path": {"type": "STRING", "description": "File name (e.g., 'index.html', 'README.md', 'LICENSE')"},
+                        "content": {"type": "STRING", "description": "Full content of the file"}
+                    },
+                    "required": ["path", "content"]
+                }
+            }
         },
-        "required": ["index.html", "README.md", "LICENSE"]
+        "required": ["files"]
     }
 
     # --- CONSTRUCT THE CONTENTS FIELD ---
@@ -336,10 +355,16 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
                 return generated_files
 
         except httpx.HTTPStatusError as e:
-            print(f"--- [LLM_CALL] HTTP Error on attempt {attempt + 1}: {e}. ---")
-        except (httpx.RequestError, KeyError, json.JSONDecodeError) as e:
-            # Catches network errors, missing structure in the result, or invalid JSON output
-            print(f"--- [LLM_CALL] Processing Error on attempt {attempt + 1}: {e}. ---")
+            print(f"--- [LLM_CALL] HTTP Error on attempt {attempt + 1}: {e.response.status_code} - {e.response.text[:500]} ---")
+        except KeyError as e:
+            print(f"--- [LLM_CALL] KeyError on attempt {attempt + 1}: Missing expected key {e} in LLM response. ---")
+            print(f"--- [LLM_CALL] Full response: {result if 'result' in locals() else 'No response received'} ---")
+        except json.JSONDecodeError as e:
+            print(f"--- [LLM_CALL] JSON Decode Error on attempt {attempt + 1}: {e} ---")
+            print(f"--- [LLM_CALL] Raw LLM output that failed to parse: {json_text[:1000] if 'json_text' in locals() else 'No text extracted'} ---")
+        except httpx.RequestError as e:
+            # Catches network errors
+            print(f"--- [LLM_CALL] Network Error on attempt {attempt + 1}: {type(e).__name__}: {str(e)} ---")
         
         if attempt < max_retries - 1:
             delay = base_delay * (2 ** attempt)
