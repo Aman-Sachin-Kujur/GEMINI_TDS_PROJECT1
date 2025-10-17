@@ -48,4 +48,28 @@ Thumbs.db
 
 # Project specific
 generated_tasks/
+
+# Test files and documentation (not needed in production)
+test_*.json
+test_*.py
+test_*.ps1
+*_test.json
+chess_game_*.json
+postman_test.json
+captcha_solver_*.html
+fixed_captcha_solver.html
+run.ps1
+
+# Documentation files (optional - keep README.md only)
+ARCHITECTURE_GUIDE.md
+ASSIGNMENT_COMPLIANCE.md
+DEPLOY_CHECKLIST.md
+JSON_REQUEST_GUIDE.md
+README_HF.md
+TESTING.md
+
+# Scripts and tests directories
+scripts/
+tests/
+.github/
 *.log
