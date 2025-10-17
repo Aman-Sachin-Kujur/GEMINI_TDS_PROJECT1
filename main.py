@@ -263,59 +263,8 @@ async def call_llm_for_code(prompt: str, task_id: str, image_parts: list) -> dic
     The response is strictly validated against a JSON schema.
     """
     print(f"--- [LLM_CALL] Attempting to generate code for Task: {task_id} using Gemini API ---")
-      # --- Improve vague user prompts automatically ---
-    normalized_prompt = prompt.lower().strip()
-
-    # If the user gave a vague short task like "create a captcha solver..."
-    # auto-extend it into a detailed instruction so Gemini knows what to do
-    if "captcha solver" in normalized_prompt:
-        print("--- [LLM_CALL] Detected captcha solver task — using CORS-safe OCR template ---")
-        prompt = (
-            "Create a FULLY FUNCTIONAL automated CAPTCHA OCR solver with CORS proxy support. COPY THIS EXACT STRUCTURE:\n\n"
-            "```html\n"
-            "<!DOCTYPE html>\n"
-            "<html><head>\n"
-            "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>\n"
-            "<title>CAPTCHA Solver</title>\n"
-            "<script src='https://cdn.tailwindcss.com'></script>\n"
-            "<script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>\n"
-            "</head><body class='bg-gray-100 min-h-screen flex items-center justify-center p-4'>\n"
-            "<div class='bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full'>\n"
-            "<h1 class='text-3xl font-bold mb-6 text-center'>CAPTCHA OCR Solver</h1>\n"
-            "<div class='mb-6'><img id='captchaImage' crossorigin='anonymous' class='mx-auto border rounded max-w-full' alt='CAPTCHA'></div>\n"
-            "<div id='status' class='text-center mb-4 text-lg font-semibold text-blue-600'>Loading...</div>\n"
-            "<div id='result' class='text-center text-2xl font-bold text-green-600'></div>\n"
-            "</div>\n"
-            "<script>\n"
-            "const params = new URLSearchParams(window.location.search);\n"
-            "let imageUrl = params.get('url') || 'sample.png';\n"
-            "const img = document.getElementById('captchaImage');\n"
-            "const status = document.getElementById('status');\n"
-            "const result = document.getElementById('result');\n"
-            "// Use CORS proxy for external URLs\n"
-            "if (imageUrl.startsWith('http') && !imageUrl.includes(window.location.hostname)) {\n"
-            "  imageUrl = 'https://corsproxy.io/?' + encodeURIComponent(imageUrl);\n"
-            "}\n"
-            "img.src = imageUrl;\n"
-            "img.onload = () => {\n"
-            "  status.textContent = 'Running OCR...';\n"
-            "  Tesseract.recognize(img, 'eng', {\n"
-            "    logger: m => { if(m.status === 'recognizing text') status.textContent = 'OCR Progress: ' + Math.round(m.progress * 100) + '%'; }\n"
-            "  }).then(({ data: { text } }) => {\n"
-            "    status.textContent = 'OCR Complete!';\n"
-            "    result.textContent = 'Recognized Text: ' + text.trim();\n"
-            "  }).catch(err => {\n"
-            "    status.textContent = 'OCR Error';\n"
-            "    result.textContent = 'Error: ' + err.message + ' (Try using sample.png or a direct image URL)';\n"
-            "  });\n"
-            "};\n"
-            "img.onerror = () => { status.textContent = 'Image load failed'; result.textContent = 'CORS Error. Use sample.png or add ?url= with a direct image.'; };\n"
-            "</script>\n"
-            "</body></html>\n"
-            "```\n\n"
-            "USE THIS EXACT CODE STRUCTURE. Also generate professional README.md and MIT LICENSE."
-        )
-    # Define system instruction for the model (UNCHANGED)
+    
+    # Define system instruction for the model
     system_prompt = (
         "You are an expert full-stack engineer and technical writer. Your task is to generate "
         "three files in a single structured JSON response: 'index.html', 'README.md', and 'LICENSE'. "
